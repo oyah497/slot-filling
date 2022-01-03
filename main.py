@@ -1,6 +1,6 @@
 import argparse
 import setting
-from gsl.data import generate_text_data, SLDataset
+from gsl.datasets import generate_text_data, SLDataset
 from gsl import Trainer, seed_everything
 
 parser = argparse.ArgumentParser(description='Set experiment args.')

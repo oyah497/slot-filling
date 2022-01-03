@@ -1,5 +1,5 @@
-from gsl.data import generate_text_data
-from gsl.data import SLDataset
+from gsl.datasets import generate_text_data
+from gsl.datasets import SLDataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from torch.utils.data import DataLoader
 from gsl.agents import Trainer
