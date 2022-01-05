@@ -1,7 +1,8 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-export HF_HOME=/home/yanyang20/gsl/cache
+#export HF_HOME=/home/yanyang20/gsl/cache
+export HF_HOME=/export/App/training_platform/PinoModel/cache
 # tgt_domains: AddToPlaylist BookRestaurant GetWeather PlayMusic RateBook SearchCreativeWork SearchScreeningEvent atis
 
 for tgt_domain in AddToPlaylist BookRestaurant GetWeather PlayMusic RateBook SearchCreativeWork SearchScreeningEvent atis; do

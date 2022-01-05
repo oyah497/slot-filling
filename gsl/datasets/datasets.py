@@ -7,7 +7,8 @@ class SLDataset(Dataset):
     Slot filling dataset.
     Args:
         text_sl_data_list: [(sentence, entity list, slot), ...]
-        tokenizer:
+        query_schema:
+        response_schema:
     """
 
     def __init__(self,

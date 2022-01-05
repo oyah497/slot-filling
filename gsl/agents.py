@@ -106,6 +106,8 @@ class Trainer:
             train_sl_dataset,
             valid_sl_dataset,
             test_sl_dataset,
+            seen_sl_dataset,
+            unseen_sl_dataset,
             batch_size=16,
             lr=2e-5,
             epochs=100,
@@ -117,6 +119,8 @@ class Trainer:
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         save_model_path = os.path.join(self.args.dump_dir, 'ckpt.pt')
         test_mistake_record_path = os.path.join(self.args.dump_dir, '%s.record' % self.exp_name)
+        seen_mistake_record_path = os.path.join(self.args.dump_dir, 'seen_%s.record' % self.exp_name)
+        unseen_mistake_record_path = os.path.join(self.args.dump_dir, 'unseen_%s.record' % self.exp_name)
         early_stopping = EarlyStopping(patience=patience, verbose=True, mode='max', path=save_model_path)
 
         for epoch in range(epochs):
@@ -180,6 +184,25 @@ class Trainer:
                       f'recall: {test_recall:.6f}, loss: {test_loss:.6f}'
         self.writer.add_text('Test result', test_result, global_step=0)
 
+        if seen_sl_dataset is not None:
+            print("Evaluation on seen dataset...")
+            seen_f1, seen_precision, seen_recall, seen_loss = self.evaluate(
+                seen_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
+                mistake_record_path=seen_mistake_record_path
+            )
+            seen_result = f'F1: {seen_f1:.6f}, precision: {seen_precision:.6f}, ' \
+                          f'recall: {seen_recall:.6f}, loss: {seen_loss:.6f}'
+            self.writer.add_text('Seen result', seen_result, global_step=0)
+        if unseen_sl_dataset is not None:
+            print("Evaluation on unseen dataset...")
+            unseen_f1, unseen_precision, unseen_recall, unseen_loss = self.evaluate(
+                unseen_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
+                mistake_record_path=unseen_mistake_record_path
+            )
+            unseen_result = f'F1: {unseen_f1:.6f}, precision: {unseen_precision:.6f}, ' \
+                            f'recall: {unseen_recall:.6f}, loss: {unseen_loss:.6f}'
+            self.writer.add_text('Unseen result', unseen_result, global_step=0)
+
     def evaluate(self,
                  dataset,
                  batch_size=16,
@@ -236,7 +259,7 @@ class Trainer:
                 mistake_records.extend(_mistake_records)
 
         if mistake_record_path is not None:
-            with open(mistake_record_path, 'w') as f:
+            with open(mistake_record_path, 'w', encoding='utf-8') as f:
                 for sample in mistake_records:
                     q, tr, pr = sample
                     record = '<query> %s\n' % q

@@ -7,8 +7,12 @@ class QueryTemplate:
             self.template = 'sentence: %s. requirement: find the %s in the above sentence.'
         elif schema == 'example':
             self.template = 'sentence: %s. requirement: find entities like %s in the above sentence.'
+        elif schema == 'example_sentence':
+            self.template = None
         elif schema == 'mix':
             self.template = 'sentence: %s. requirement: find the %s, like %s, in the above sentence.'
+        elif schema == 'mix_sentence':
+            self.template = None
         else:
             raise ValueError('Unsupported schema: %s.' % schema)
         self.schema = schema

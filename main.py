@@ -45,15 +45,19 @@ seed_everything(args.seed)
 
 
 def train():
-    train_data, valid_data, test_data = generate_text_data(args.data_dir,
-                                                           args.tgt_domain,
-                                                           shot_num=args.shot_num)
+    train_data, valid_data, test_data, seen_data, unseen_data = generate_text_data(args.data_dir,
+                                                                                   args.tgt_domain,
+                                                                                   shot_num=args.shot_num)
     train_dataset = SLDataset(train_data, query_schema=args.query_schema, response_schema=args.response_schema)
     valid_dataset = SLDataset(valid_data, query_schema=args.query_schema, response_schema=args.response_schema)
     test_dataset = SLDataset(test_data, query_schema=args.query_schema, response_schema=args.response_schema)
+    seen_dataset = None if seen_data is None else SLDataset(seen_data, query_schema=args.query_schema,
+                                                            response_schema=args.response_schema)
+    unseen_dataset = None if unseen_data is None else SLDataset(unseen_data, query_schema=args.query_schema,
+                                                                response_schema=args.response_schema)
 
     trainer = Trainer(args.model_name, args)
-    trainer.fit(train_dataset, valid_dataset, test_dataset,
+    trainer.fit(train_dataset, valid_dataset, test_dataset, seen_dataset, unseen_dataset,
                 batch_size=args.batch_size, lr=args.lr, epochs=args.num_epochs, patience=args.patience,
                 query_max_seq_length=args.query_max_seq_length, response_max_seq_length=args.response_max_seq_length,
                 num_beams=args.num_beams)

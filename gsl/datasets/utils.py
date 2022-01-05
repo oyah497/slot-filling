@@ -89,8 +89,58 @@ slot2example = {
     "movie_name": ["on the beat", "for lovers only"]
 }
 
+# new example!!
+# slot2example = {
+#     # AddToPlaylist
+#     "music_item": ["song", "track"],
+#     "playlist_owner": ["my", "donna s"],
+#     "entity_name": ["the crabfish", "natasha"],
+#     "playlist": ["quiero playlist", "workday lounge"],
+#     "artist": ["lady bunny", "lisa dalbello"],
+#     # BookRestaurant
+#     "city": ["north lima", "falmouth"],
+#     "facility": ["smoking room", "indoor"],
+#     "timeRange": ["9 am", "january the twentieth"],
+#     "restaurant_name": ["the maisonette", "robinson house"],
+#     "country": ["dominican republic", "togo"],
+#     "cuisine": ["ouzeri", "jewish"],
+#     "restaurant_type": ["tea house", "tavern"],
+#     "served_dish": ["wings", "cheese fries"],
+#     "party_size_number": ["seven", "one"],
+#     "poi": ["east brady", "fairview"],
+#     "sort": ["top-rated", "highly rated"],
+#     "spatial_relation": ["close", "faraway"],
+#     "state": ["sc", "ut"],
+#     "party_size_description": ["me and angeline", "my colleague and i"],
+#     # GetWeather
+#     "current_location": ["current spot", "here"],
+#     "geographic_poi": ["bashkirsky nature reserve", "narew national park"],
+#     "condition_temperature": ["chillier", "hot"],
+#     "condition_description": ["humidity", "depression"],
+#     # PlayMusic
+#     "genre": ["techno", "pop"],
+#     "service": ["spotify", "groove shark"],
+#     "year": ["2005", "1993"],
+#     "album": ["allergic", "secrets on parade"],
+#     "track": ["in your eyes", "the wizard and i"],
+#     # RateBook
+#     "object_part_of_series_type": ["series", "saga"],
+#     "object_select": ["this", "current"],
+#     "rating_value": ["1", "four"],
+#     "object_name": ["american tabloid", "my beloved world"],
+#     "object_type": ["book", "novel"],
+#     "rating_unit": ["points", "stars"],
+#     "best_rating": ["6", "5"],
+#     # SearchCreativeWork
+#     # SearchScreeningEvent
+#     "movie_type": ["animated movies", "films"],
+#     "object_location_type": ["movie theatre", "cinema"],
+#     "location_name": ["amc theaters", "wanda group"],
+#     "movie_name": ["on the beat", "for lovers only"]
+# }
+
 domain2slots['atis'] = []
-with open('gsl/datasets/atis_slot_info.txt', 'r') as fr:
+with open('gsl/datasets/atis_slot_info.txt', 'r', encoding='utf-8') as fr:
     for line in fr:
         line_strip = line.strip('\n').split('\t')
         slot = line_strip[0]
@@ -160,6 +210,17 @@ def load_snips_data(data_dir):
     return domain2data
 
 
+def load_snips_seen_unseen_data(data_dir):
+    domain2data_seen = {}
+    domain2data_unseen = {}
+    for domain in snips_domains:
+        seen_file_path = os.path.join(data_dir, 'snips', domain, f'seen_slots.txt')
+        unseen_file_path = os.path.join(data_dir, 'snips', domain, f'unseen_slots.txt')
+        domain2data_seen[domain] = load_file(seen_file_path)
+        domain2data_unseen[domain] = load_file(unseen_file_path)
+    return domain2data_seen, domain2data_unseen
+
+
 def load_atis_data(data_dir):
     file_path = os.path.join(data_dir, 'atis', 'atis.txt')
     return {'atis': load_file(file_path)}
@@ -181,4 +242,10 @@ def generate_text_data(data_dir, target_domain, shot_num=0):
     valid_data.extend(all_data[target_domain][shot_num:500])
     test_data.extend(all_data[target_domain][500:])
 
-    return train_data, valid_data, test_data
+    if target_domain != 'atis':
+        domain2data_seen, domain2data_unseen = load_snips_seen_unseen_data(data_dir)
+        seen_data = domain2data_seen[target_domain]
+        unseen_data = domain2data_unseen[target_domain]
+        return train_data, valid_data, test_data, seen_data, unseen_data
+
+    return train_data, valid_data, test_data, None, None
