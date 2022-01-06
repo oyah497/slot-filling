@@ -118,9 +118,6 @@ class Trainer:
         train_dataloader = DataLoader(train_sl_dataset, batch_size=batch_size, shuffle=True)
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         save_model_path = os.path.join(self.args.dump_dir, 'ckpt.pt')
-        test_mistake_record_path = os.path.join(self.args.dump_dir, '%s.record' % self.exp_name)
-        seen_mistake_record_path = os.path.join(self.args.dump_dir, 'seen_%s.record' % self.exp_name)
-        unseen_mistake_record_path = os.path.join(self.args.dump_dir, 'unseen_%s.record' % self.exp_name)
         early_stopping = EarlyStopping(patience=patience, verbose=True, mode='max', path=save_model_path)
 
         for epoch in range(epochs):
@@ -176,6 +173,8 @@ class Trainer:
         print("Evaluation on test dataset...")
         self.model.load_state_dict(torch.load(save_model_path))
         self.model = self.model.to(self.device)
+
+        test_mistake_record_path = os.path.join(self.args.dump_dir, '%s.record' % self.exp_name)
         test_f1, test_precision, test_recall, test_loss = self.evaluate(
             test_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
             mistake_record_path=test_mistake_record_path
@@ -184,8 +183,9 @@ class Trainer:
                       f'recall: {test_recall:.6f}, loss: {test_loss:.6f}'
         self.writer.add_text('Test result', test_result, global_step=0)
 
-        if seen_sl_dataset is not None:
+        if seen_sl_dataset is not None and len(seen_sl_dataset) > 0:
             print("Evaluation on seen dataset...")
+            seen_mistake_record_path = os.path.join(self.args.dump_dir, 'seen_%s.record' % self.exp_name)
             seen_f1, seen_precision, seen_recall, seen_loss = self.evaluate(
                 seen_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
                 mistake_record_path=seen_mistake_record_path
@@ -193,8 +193,9 @@ class Trainer:
             seen_result = f'F1: {seen_f1:.6f}, precision: {seen_precision:.6f}, ' \
                           f'recall: {seen_recall:.6f}, loss: {seen_loss:.6f}'
             self.writer.add_text('Seen result', seen_result, global_step=0)
-        if unseen_sl_dataset is not None:
+        if unseen_sl_dataset is not None and len(unseen_sl_dataset) > 0:
             print("Evaluation on unseen dataset...")
+            unseen_mistake_record_path = os.path.join(self.args.dump_dir, 'unseen_%s.record' % self.exp_name)
             unseen_f1, unseen_precision, unseen_recall, unseen_loss = self.evaluate(
                 unseen_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
                 mistake_record_path=unseen_mistake_record_path
@@ -239,15 +240,15 @@ class Trainer:
                     )
                 loss = outputs.loss
                 loss_values.append(loss.item())
-
-            pred_ids = self.model.generate(
-                input_ids=query_ids,
-                attention_mask=query_mask,
-                max_length=response_max_seq_length,
-                num_beams=num_beams,
-                repetition_penalty=2.5,
-                length_penalty=1.0,
-                early_stopping=True)
+            with torch.no_grad():
+                pred_ids = self.model.generate(
+                    input_ids=query_ids,
+                    attention_mask=query_mask,
+                    max_length=response_max_seq_length,
+                    num_beams=num_beams,
+                    repetition_penalty=2.5,
+                    length_penalty=1.0,
+                    early_stopping=True)
             pred_response = self.tokenizer.batch_decode(pred_ids, skip_special_tokens=True,
                                                         clean_up_tokenization_spaces=True)
             _tp, _num_true, _num_pred, _mistake_records = tp_count(query, response, pred_response)
