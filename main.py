@@ -14,7 +14,7 @@ parser.add_argument('tgt_domain', help='Target domain.', type=str,
                              'SearchScreeningEvent',
                              'atis'])
 parser.add_argument('--seed', help='Global seed.', type=int, default=1129)
-parser.add_argument('--model-name', help='Model name.', type=str, default='t5-small')
+parser.add_argument('--model-name', help='Model name.', type=str, default='t5-base')
 parser.add_argument('--batch-size', help='Batch size.', type=int, default=16)
 parser.add_argument('--num-epochs', help='Train epochs.', type=int, default=100)
 parser.add_argument('--lr', help='Learning rate of train step.', type=float, default=2e-5)

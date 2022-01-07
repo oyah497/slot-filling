@@ -8,7 +8,7 @@ export HF_HOME=/export/App/training_platform/PinoModel/cache
 for tgt_domain in AddToPlaylist BookRestaurant GetWeather PlayMusic RateBook SearchCreativeWork SearchScreeningEvent atis; do
   for shot_num in 0 20 50; do
     python3 main.py $tgt_domain \
-      --model-name t5-large \
+      --model-name t5-base \
       --batch-size 16 \
       --num-epochs 100 \
       --lr 2e-5 \

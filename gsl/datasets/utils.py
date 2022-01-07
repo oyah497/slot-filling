@@ -40,56 +40,6 @@ slot2description = {'playlist': 'playlist', 'music_item': 'music item', 'geograp
                     'condition_description': 'weather', 'condition_temperature': 'temperature'}
 
 # use two examples
-slot2example = {
-    # AddToPlaylist
-    "music_item": ["song", "track"],
-    "playlist_owner": ["my", "donna s"],
-    "entity_name": ["the crabfish", "natasha"],
-    "playlist": ["quiero playlist", "workday lounge"],
-    "artist": ["lady bunny", "lisa dalbello"],
-    # BookRestaurant
-    "city": ["north lima", "falmouth"],
-    "facility": ["smoking room", "indoor"],
-    "timeRange": ["9 am", "january the twentieth"],
-    "restaurant_name": ["the maisonette", "robinson house"],
-    "country": ["dominican republic", "togo"],
-    "cuisine": ["ouzeri", "jewish"],
-    "restaurant_type": ["tea house", "tavern"],
-    "served_dish": ["wings", "cheese fries"],
-    "party_size_number": ["seven", "one"],
-    "poi": ["east brady", "fairview"],
-    "sort": ["top-rated", "highly rated"],
-    "spatial_relation": ["close", "faraway"],
-    "state": ["sc", "ut"],
-    "party_size_description": ["me and angeline", "my colleague and i"],
-    # GetWeather
-    "current_location": ["current spot", "here"],
-    "geographic_poi": ["bashkirsky nature reserve", "narew national park"],
-    "condition_temperature": ["chillier", "hot"],
-    "condition_description": ["humidity", "depression"],
-    # PlayMusic
-    "genre": ["techno", "pop"],
-    "service": ["spotify", "groove shark"],
-    "year": ["2005", "1993"],
-    "album": ["allergic", "secrets on parade"],
-    "track": ["in your eyes", "the wizard and i"],
-    # RateBook
-    "object_part_of_series_type": ["series", "saga"],
-    "object_select": ["this", "current"],
-    "rating_value": ["1", "four"],
-    "object_name": ["american tabloid", "my beloved world"],
-    "object_type": ["book", "novel"],
-    "rating_unit": ["points", "stars"],
-    "best_rating": ["6", "5"],
-    # SearchCreativeWork
-    # SearchScreeningEvent
-    "movie_type": ["animated movies", "films"],
-    "object_location_type": ["movie theatre", "cinema"],
-    "location_name": ["amc theaters", "wanda group"],
-    "movie_name": ["on the beat", "for lovers only"]
-}
-
-# new example!!
 # slot2example = {
 #     # AddToPlaylist
 #     "music_item": ["song", "track"],
@@ -138,6 +88,56 @@ slot2example = {
 #     "location_name": ["amc theaters", "wanda group"],
 #     "movie_name": ["on the beat", "for lovers only"]
 # }
+
+# new example!!
+slot2example = {
+    # AddToPlaylist
+    "music_item": ["record", "melody"],
+    "playlist_owner": ["your", "mom s"],
+    "entity_name": ["rain on me", "blinding lights"],
+    "playlist": ["watermelon sugar", "dance monkey"],
+    "artist": ["lady gaga", "ariana grande"],
+    # BookRestaurant
+    "city": ["los angeles", "new york"],
+    "facility": ["rest room", "outdoor"],
+    "timeRange": ["8 pm", "november 29"],
+    "restaurant_name": ["mama s fish house", "snow s bbq"],
+    "country": ["america", "britain"],
+    "cuisine": ["japanese cuisine", "chinese food"],
+    "restaurant_type": ["buffet", "pub"],
+    "served_dish": ["sushi", "steak"],
+    "party_size_number": ["seven", "one"],
+    "poi": ["parker pennsylvania", "bailey drive"],
+    "sort": ["high class", "top ranking"],
+    "spatial_relation": ["remote", "nearby"],
+    "state": ["ny", "fl"],
+    "party_size_description": ["me and my friend", "my mom and i"],
+    # GetWeather
+    "current_location": ["my location", "here"],
+    "geographic_poi": ["yellowstone national park", "the great wall"],
+    "condition_temperature": ["cold", "warm"],
+    "condition_description": ["temperature", "atmospheric pressure"],
+    # PlayMusic
+    "genre": ["classical", "rock"],
+    "service": ["pandora", "deezer"],
+    "year": ["2022", "2021"],
+    "album": ["folklore", "reputation"],
+    "track": ["end game", "getaway car"],
+    # RateBook
+    "object_part_of_series_type": ["series", "saga"],
+    "object_select": ["this", "current"],
+    "rating_value": ["5", "four"],
+    "object_name": ["lessons from madame chic", "how to trade in stocks"],
+    "object_type": ["comic book", "fiction"],
+    "rating_unit": ["points", "stars"],
+    "best_rating": ["6", "5"],
+    # SearchCreativeWork
+    # SearchScreeningEvent
+    "movie_type": ["science fiction films", "comedy"],
+    "object_location_type": ["movie theatre", "cinema"],
+    "location_name": ["the castro theatre", "film forum"],
+    "movie_name": ["titanic", "green book"]
+}
 
 domain2slots['atis'] = []
 with open('gsl/datasets/atis_slot_info.txt', 'r', encoding='utf-8') as fr:
