@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import BartForConditionalGeneration, BartTokenizer
 
 
 class EarlyStopping:
@@ -73,8 +74,15 @@ class EarlyStopping:
 
 class Trainer:
     def __init__(self, model_name_or_path, args):
-        self.model = T5ForConditionalGeneration.from_pretrained(model_name_or_path)
-        self.tokenizer = T5Tokenizer.from_pretrained(model_name_or_path)
+        if 't5' in model_name_or_path:
+            self.model = T5ForConditionalGeneration.from_pretrained(model_name_or_path)
+            self.tokenizer = T5Tokenizer.from_pretrained(model_name_or_path)
+        elif 'bart' in model_name_or_path:
+            self.model = BartForConditionalGeneration.from_pretrained(model_name_or_path)
+            self.tokenizer = BartTokenizer.from_pretrained(model_name_or_path)
+        else:
+            raise ValueError('Unsupported model: %s' % model_name_or_path)
+
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model = self.model.to(self.device)
 

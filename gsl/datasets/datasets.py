@@ -24,9 +24,9 @@ class SLDataset(Dataset):
         self.generate_xy_text()
 
     def generate_xy_text(self):
-        for sentence, entity, slot in self.text_sl_data_list:
-            self.x_text.append(self.query_generator(sentence, slot))
-            self.y_text.append(self.response_generator(entity))
+        for domain, sentence, entity, slot in self.text_sl_data_list:
+            self.x_text.append(self.query_generator(domain, sentence, slot))
+            self.y_text.append(self.response_generator(sentence, entity))
 
     def __len__(self):
         return len(self.text_sl_data_list)

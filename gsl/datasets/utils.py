@@ -1,161 +1,531 @@
 import os
 from collections import defaultdict
 
-snips_domains = ['AddToPlaylist', 'BookRestaurant', 'GetWeather', 'PlayMusic', 'RateBook', 'SearchCreativeWork',
-                 'SearchScreeningEvent']
 
-domain2slots = {
-    "AddToPlaylist": ['music_item', 'playlist_owner', 'entity_name', 'playlist', 'artist'],
-    "BookRestaurant": ['city', 'facility', 'timeRange', 'restaurant_name', 'country', 'cuisine', 'restaurant_type',
-                       'served_dish', 'party_size_number', 'poi', 'sort', 'spatial_relation', 'state',
-                       'party_size_description'],
-    "GetWeather": ['city', 'state', 'timeRange', 'current_location', 'country', 'spatial_relation', 'geographic_poi',
-                   'condition_temperature', 'condition_description'],
-    "PlayMusic": ['genre', 'music_item', 'service', 'year', 'playlist', 'album', 'sort', 'track', 'artist'],
-    "RateBook": ['object_part_of_series_type', 'object_select', 'rating_value', 'object_name', 'object_type',
-                 'rating_unit', 'best_rating'],
-    "SearchCreativeWork": ['object_name', 'object_type'],
-    "SearchScreeningEvent": ['timeRange', 'movie_type', 'object_location_type', 'object_type', 'location_name',
-                             'spatial_relation', 'movie_name']
+snips_map = {
+    # =========================================
+    'AddToPlaylist': {
+        'domain_desc': 'add to playlist',
+        'slot_info': {
+            # 'music_item', 'playlist_owner', 'entity_name', 'playlist', 'artist'
+            'music_item': {
+                'slot_type': 'music_item',
+                'slot_desc': 'music item',
+                'slot_example': {
+                    'context': 'funk outta here please add a piece to my playlist',
+                    'true_response': 'piece',
+                }
+            },
+            'playlist_owner': {
+                'slot_type': 'playlist_owner',
+                'slot_desc': 'playlist owner',
+                'slot_example': {
+                    'context': 'add the album to sebastian s ejercicio playlist',
+                    'true_response': 'sebastian',
+                }
+            },
+            'entity_name': {
+                'slot_type': 'entity_name',
+                'slot_desc': 'entity name',
+                'slot_example': {
+                    'context': 'i am m going to add love letter to my list of parties',
+                    'true_response': 'love letter',
+                }
+            },
+            'playlist': {
+                'slot_type': 'playlist',
+                'slot_desc': 'playlist',
+                'slot_example': {
+                    'context': 'add this song to my stay happy playlist',
+                    'true_response': 'stay happy',
+                }
+            },
+            'artist': {
+                'slot_type': 'artist',
+                'slot_desc': 'artist',
+                'slot_example': {
+                    'context': 'i am going to include the taylor swift track in my bass gaming playlist',
+                    'true_response': 'taylor swift',
+                }
+            },
+        }
+    },
+    # =========================================
+    'BookRestaurant': {
+        'domain_desc': 'book restaurant',
+        'slot_info': {
+            # 'city', 'facility', 'timeRange', 'restaurant_name', 'country', 'cuisine', 'restaurant_type',
+            #                        'served_dish', 'party_size_number', 'poi', 'sort', 'spatial_relation', 'state',
+            #                        'party_size_description'
+            'city': {
+                'slot_type': 'city',
+                'slot_desc': 'city',
+                'slot_example': {
+                    'context': 'make a reservation at the best pub in shanghai',
+                    'true_response': 'shanghai',
+                }
+            },
+            'facility': {
+                'slot_type': 'facility',
+                'slot_desc': 'facility',
+                'slot_example': {
+                    'context': 'in washington reserve a tavern with baby chair',
+                    'true_response': 'baby chair',
+                }
+            },
+            'timeRange': {
+                'slot_type': 'timeRange',
+                'slot_desc': 'time range',
+                'slot_example': {
+                    'context': 'i need a reservation for the chinese food in cuba in 10 minutes',
+                    'true_response': 'in 10 minutes',
+                }
+            },
+            'restaurant_name': {
+                'slot_type': 'restaurant_name',
+                'slot_desc': 'restaurant name',
+                'slot_example': {
+                    'context': 'i am going to kfc together with my friends',
+                    'true_response': 'kfc',
+                }
+            },
+            'country': {
+                'slot_type': 'country',
+                'slot_desc': 'country',
+                'slot_example': {
+                    'context': 'at 9 am reserve a restaurant in jerusalem for 8 persons',
+                    'true_response': 'jerusalem',
+                }
+            },
+            'cuisine': {
+                'slot_type': 'cuisine',
+                'slot_desc': 'cuisine',
+                'slot_example': {
+                    'context': 'i d like to reserve a table for one at a spanish restaurant in wesley',
+                    'true_response': 'spanish',
+                }
+            },
+            'restaurant_type': {
+                'slot_type': 'restaurant_type',
+                'slot_desc': 'restaurant type',
+                'slot_example': {
+                    'context': 'i d like to reserve a buffet for my family',
+                    'true_response': 'buffet',
+                }
+            },
+            'served_dish': {
+                'slot_type': 'served_dish',
+                'slot_desc': 'served dish',
+                'slot_example': {
+                    'context': 'find a restaurant serves hot-pot and make a reservation',
+                    'true_response': 'hot-pot',
+                }
+            },
+            'party_size_number': {
+                'slot_type': 'party_size_number',
+                'slot_desc': 'number',
+                'slot_example': {
+                    'context': 'make a six-person reservation at an alpine wine bar',
+                    'true_response': 'six-person',
+                }
+            },
+            'poi': {
+                'slot_type': 'poi',
+                'slot_desc': 'position',
+                'slot_example': {
+                    'context': 'i d want to reserve a restaurant near my hotel',
+                    'true_response': 'near my hotel',
+                }
+            },
+            'sort': {
+                'slot_type': 'sort',
+                'slot_desc': 'type',
+                'slot_example': {
+                    'context': 'get a highly regarded sandwich shop in colombia',
+                    'true_response': 'highly regarded',
+                }
+            },
+            'spatial_relation': {
+                'slot_type': 'spatial_relation',
+                'slot_desc': 'spatial relation',
+                'slot_example': {
+                    'context': 'book a restaurant for 2 that s 10 minutes walk from here',
+                    'true_response': '10 minutes walk',
+                }
+            },
+            'state': {
+                'slot_type': 'state',
+                'slot_desc': 'state',
+                'slot_example': {
+                    'context': 'we d want to go to a brasserie in omaha that serves sicilian cuisine',
+                    'true_response': 'omaha',
+                }
+            },
+            'party_size_description': {
+                'slot_type': 'party_size_description',
+                'slot_desc': 'person',
+                'slot_example': {
+                    'context': 'book a table for sebastian perez and leclerc',
+                    'true_response': 'sebastian perez and leclerc',
+                }
+            },
+        }
+    },
+    # =========================================
+    'GetWeather': {
+        'domain_desc': 'get weather',
+        'slot_info': {
+            # 'city', 'state', 'timeRange', 'current_location', 'country', 'spatial_relation', 'geographic_poi',
+            #                    'condition_temperature', 'condition_description'
+            'city': {
+                'slot_type': 'city',
+                'slot_desc': 'city',
+                'slot_example': {
+                    'context': 'is the temperature going down to 2 in shanghai',
+                    'true_response': 'shanghai',
+                }
+            },
+            'state': {
+                'slot_type': 'state',
+                'slot_desc': 'state',
+                'slot_example': {
+                    'context': 'check the weather in omaha',
+                    'true_response': 'omaha',
+                }
+            },
+            'timeRange': {
+                'slot_type': 'timeRange',
+                'slot_desc': 'time range',
+                'slot_example': {
+                    'context': 'what is the forecast for haidian in next half an hour',
+                    'true_response': 'in next half an hour',
+                }
+            },
+            'current_location': {
+                'slot_type': 'current_location',
+                'slot_desc': 'current location',
+                'slot_example': {
+                    'context': 'will it rain in my present local street on 11/10/2023',
+                    'true_response': 'present local street',
+                }
+            },
+            'country': {
+                'slot_type': 'country',
+                'slot_desc': 'country',
+                'slot_example': {
+                    'context': 'what s the weather like in jerusalem right now',
+                    'true_response': 'jerusalem',
+                }
+            },
+            'spatial_relation': {
+                'slot_type': 'spatial_relation',
+                'slot_desc': 'spatial relation',
+                'slot_example': {
+                    'context': 'is it going to rain within 10 minutes bus distance',
+                    'true_response': 'within 10 minutes bus distance',
+                }
+            },
+            'geographic_poi': {
+                'slot_type': 'geographic_poi',
+                'slot_desc': 'geographic position',
+                'slot_example': {
+                    'context': 'in west lake park, how cold will it be tomorrow',
+                    'true_response': 'west lake park',
+                }
+            },
+            'condition_temperature': {
+                'slot_type': 'condition_temperature',
+                'slot_desc': 'temperature',
+                'slot_example': {
+                    'context': 'will it get hotter in 2 hours',
+                    'true_response': 'hotter',
+                }
+            },
+            'condition_description': {
+                'slot_type': 'condition_description',
+                'slot_desc': 'weather',
+                'slot_example': {
+                    'context': 'will israel be hit by a snow storm',
+                    'true_response': 'snow storm',
+                }
+            },
+        }
+    },
+    # =========================================
+    'PlayMusic': {
+        'domain_desc': 'play music',
+        'slot_info': {
+            # 'genre', 'music_item', 'service', 'year', 'playlist', 'album', 'sort', 'track', 'artist'
+            'genre': {
+                'slot_type': 'genre',
+                'slot_desc': 'genre',
+                'slot_example': {
+                    'context': 'find me a lullaby in netease cloud music',
+                    'true_response': 'lullaby',
+                }
+            },
+            'music_item': {
+                'slot_type': 'music_item',
+                'slot_desc': 'music item',
+                'slot_example': {
+                    'context': 'funk outta here please add a piece to my playlist',
+                    'true_response': 'piece',
+                }
+            },
+            'service': {
+                'slot_type': 'service',
+                'slot_desc': 'service',
+                'slot_example': {
+                    'context': 'find me a lullaby in netease cloud music',
+                    'true_response': 'netease cloud music',
+                }
+            },
+            'year': {
+                'slot_type': 'year',
+                'slot_desc': 'year',
+                'slot_example': {
+                    'context': 'play the most popular song in 2021',
+                    'true_response': '2021',
+                }
+            },
+            'playlist': {
+                'slot_type': 'playlist',
+                'slot_desc': 'playlist',
+                'slot_example': {
+                    'context': 'add this song to my stay happy playlist',
+                    'true_response': 'stay happy',
+                }
+            },
+            'album': {
+                'slot_type': 'album',
+                'slot_desc': 'album',
+                'slot_example': {
+                    'context': 'play the album getting ready by eason chan',
+                    'true_response': 'getting ready',
+                }
+            },
+            'sort': {
+                'slot_type': 'sort',
+                'slot_desc': 'type',
+                'slot_example': {
+                    'context': 'play the most popular song in 2021',
+                    'true_response': 'the most popular',
+                }
+            },
+            'track': {
+                'slot_type': 'track',
+                'slot_desc': 'track',
+                'slot_example': {
+                    'context': 'play shall we talk by eason chan',
+                    'true_response': 'shall we talk',
+                }
+            },
+            'artist': {
+                'slot_type': 'artist',
+                'slot_desc': 'artist',
+                'slot_example': {
+                    'context': 'i am going to include the taylor swift track in my bass gaming playlist',
+                    'true_response': 'taylor swift',
+                }
+            },
+        }
+    },
+    # =========================================
+    'RateBook': {
+        'domain_desc': 'rate book',
+        'slot_info': {
+            # 'object_part_of_series_type', 'object_select', 'rating_value', 'object_name', 'object_type',
+            #                  'rating_unit', 'best_rating'
+            'object_part_of_series_type': {
+                'slot_type': 'object_part_of_series_type',
+                'slot_desc': 'series',
+                'slot_example': {
+                    'context': 'i rate the sequel 0 point',
+                    'true_response': 'sequel',
+                }
+            },
+            'object_select': {
+                'slot_type': 'object_select',
+                'slot_desc': 'this current',
+                'slot_example': {
+                    'context': 'that book deserves a 5 stars',
+                    'true_response': 'that',
+                }
+            },
+            'rating_value': {
+                'slot_type': 'rating_value',
+                'slot_desc': 'rating value',
+                'slot_example': {
+                    'context': 'the book deserves a 5 stars',
+                    'true_response': '5',
+                }
+            },
+            'object_name': {
+                'slot_type': 'object_name',
+                'slot_desc': 'object name',
+                'slot_example': {
+                    'context': 'i rate lessons from madame chic 10 stars',
+                    'true_response': 'lessons from madame chic',
+                }
+            },
+            'object_type': {
+                'slot_type': 'object_type',
+                'slot_desc': 'object type',
+                'slot_example': {
+                    'context': 'this horror literature deserves a 5 stars',
+                    'true_response': 'horror',
+                }
+            },
+            'rating_unit': {
+                'slot_type': 'rating_unit',
+                'slot_desc': 'rating unit',
+                'slot_example': {
+                    'context': 'this book deserves a 5 stars',
+                    'true_response': 'stars',
+                }
+            },
+            'best_rating': {
+                'slot_type': 'best_rating',
+                'slot_desc': 'best rating',
+                'slot_example': {
+                    'context': 'the highest rating for this book is 10',
+                    'true_response': '10',
+                }
+            },
+        }
+    },
+    # =========================================
+    'SearchCreativeWork': {
+        'domain_desc': 'search creative work',
+        'slot_info': {
+            # 'object_name', 'object_type'
+            'object_name': {
+                'slot_type': 'object_name',
+                'slot_desc': 'object name',
+                'slot_example': {
+                    'context': 'paris baguette is a bakery chain based in south korea owned by the spc group',
+                    'true_response': 'paris baguette',
+                }
+            },
+            'object_type': {
+                'slot_type': 'object_type',
+                'slot_desc': 'object type',
+                'slot_example': {
+                    'context': 'paris baguette is a bakery chain based in south korea owned by the spc group',
+                    'true_response': 'bakery',
+                }
+            },
+        }
+    },
+    # =========================================
+    'SearchScreeningEvent': {
+        'domain_desc': 'search screening event',
+        'slot_info': {
+            # 'timeRange', 'movie_type', 'object_location_type', 'object_type', 'location_name',
+            #                              'spatial_relation', 'movie_name'
+            'timeRange': {
+                'slot_type': 'timeRange',
+                'slot_desc': 'time range',
+                'slot_example': {
+                    'context': 'the movie starts at half past eight pm',
+                    'true_response': 'half past eight pm',
+                }
+            },
+            'movie_type': {
+                'slot_type': 'movie_type',
+                'slot_desc': 'movie type',
+                'slot_example': {
+                    'context': 'i want to see a comedy like green book',
+                    'true_response': 'comedy',
+                }
+            },
+            'object_location_type': {
+                'slot_type': 'object_location_type',
+                'slot_desc': 'location type',
+                'slot_example': {
+                    'context': 'the castro theatre is the closest movie house showing green book',
+                    'true_response': 'movie house',
+                }
+            },
+            'object_type': {
+                'slot_type': 'object_type',
+                'slot_desc': 'object type',
+                'slot_example': {
+                    'context': 'show me the movie poster of green book',
+                    'true_response': 'movie poster',
+                }
+            },
+            'location_name': {
+                'slot_type': 'location_name',
+                'slot_desc': 'location name',
+                'slot_example': {
+                    'context': 'the castro theatre is the closest movie house showing green book',
+                    'true_response': 'the castro theatre',
+                }
+            },
+            'spatial_relation': {
+                'slot_type': 'spatial_relation',
+                'slot_desc': 'spatial relation',
+                'slot_example': {
+                    'context': 'the castro theatre is the closest movie house showing green book',
+                    'true_response': 'closest',
+                }
+            },
+            'movie_name': {
+                'slot_type': 'movie_name',
+                'slot_desc': 'movie name',
+                'slot_example': {
+                    'context': 'the castro theatre is the closest movie house showing green book',
+                    'true_response': 'green book',
+                }
+            },
+        }
+    },
 }
-domain2description = {"AddToPlaylist": "add to playlist", "BookRestaurant": "reserve restaurant",
-                      "GetWeather": "get weather",
-                      "PlayMusic": "play music", "RateBook": "rate book", "SearchCreativeWork": "search creative work",
-                      "SearchScreeningEvent": "search screening event"}
-slot2description = {'playlist': 'playlist', 'music_item': 'music item', 'geographic_poi': 'geographic position',
-                    'facility': 'facility', 'movie_name': 'movie name', 'location_name': 'location name',
-                    'restaurant_name': 'restaurant name', 'track': 'track', 'restaurant_type': 'restaurant type',
-                    'object_part_of_series_type': 'series', 'country': 'country', 'service': 'service',
-                    'poi': 'position',
-                    'party_size_description': 'person', 'served_dish': 'served dish', 'genre': 'genre',
-                    'current_location': 'current location', 'object_select': 'this current', 'album': 'album',
-                    'object_name': 'object name', 'state': 'location', 'sort': 'type',
-                    'object_location_type': 'location type',
-                    'movie_type': 'movie type', 'spatial_relation': 'spatial relation', 'artist': 'artist',
-                    'cuisine': 'cuisine', 'entity_name': 'entity name', 'object_type': 'object type',
-                    'playlist_owner': 'playlist owner', 'timeRange': 'time range', 'city': 'city',
-                    'rating_value': 'rating value',
-                    'best_rating': 'best rating', 'rating_unit': 'rating unit', 'year': 'year',
-                    'party_size_number': 'number',
-                    'condition_description': 'weather', 'condition_temperature': 'temperature'}
 
-# use two examples
-# slot2example = {
-#     # AddToPlaylist
-#     "music_item": ["song", "track"],
-#     "playlist_owner": ["my", "donna s"],
-#     "entity_name": ["the crabfish", "natasha"],
-#     "playlist": ["quiero playlist", "workday lounge"],
-#     "artist": ["lady bunny", "lisa dalbello"],
-#     # BookRestaurant
-#     "city": ["north lima", "falmouth"],
-#     "facility": ["smoking room", "indoor"],
-#     "timeRange": ["9 am", "january the twentieth"],
-#     "restaurant_name": ["the maisonette", "robinson house"],
-#     "country": ["dominican republic", "togo"],
-#     "cuisine": ["ouzeri", "jewish"],
-#     "restaurant_type": ["tea house", "tavern"],
-#     "served_dish": ["wings", "cheese fries"],
-#     "party_size_number": ["seven", "one"],
-#     "poi": ["east brady", "fairview"],
-#     "sort": ["top-rated", "highly rated"],
-#     "spatial_relation": ["close", "faraway"],
-#     "state": ["sc", "ut"],
-#     "party_size_description": ["me and angeline", "my colleague and i"],
-#     # GetWeather
-#     "current_location": ["current spot", "here"],
-#     "geographic_poi": ["bashkirsky nature reserve", "narew national park"],
-#     "condition_temperature": ["chillier", "hot"],
-#     "condition_description": ["humidity", "depression"],
-#     # PlayMusic
-#     "genre": ["techno", "pop"],
-#     "service": ["spotify", "groove shark"],
-#     "year": ["2005", "1993"],
-#     "album": ["allergic", "secrets on parade"],
-#     "track": ["in your eyes", "the wizard and i"],
-#     # RateBook
-#     "object_part_of_series_type": ["series", "saga"],
-#     "object_select": ["this", "current"],
-#     "rating_value": ["1", "four"],
-#     "object_name": ["american tabloid", "my beloved world"],
-#     "object_type": ["book", "novel"],
-#     "rating_unit": ["points", "stars"],
-#     "best_rating": ["6", "5"],
-#     # SearchCreativeWork
-#     # SearchScreeningEvent
-#     "movie_type": ["animated movies", "films"],
-#     "object_location_type": ["movie theatre", "cinema"],
-#     "location_name": ["amc theaters", "wanda group"],
-#     "movie_name": ["on the beat", "for lovers only"]
-# }
 
-# new example!!
-slot2example = {
-    # AddToPlaylist
-    "music_item": ["record", "melody"],
-    "playlist_owner": ["your", "mom s"],
-    "entity_name": ["rain on me", "blinding lights"],
-    "playlist": ["watermelon sugar", "dance monkey"],
-    "artist": ["lady gaga", "ariana grande"],
-    # BookRestaurant
-    "city": ["los angeles", "new york"],
-    "facility": ["rest room", "outdoor"],
-    "timeRange": ["8 pm", "november 29"],
-    "restaurant_name": ["mama s fish house", "snow s bbq"],
-    "country": ["america", "britain"],
-    "cuisine": ["japanese cuisine", "chinese food"],
-    "restaurant_type": ["buffet", "pub"],
-    "served_dish": ["sushi", "steak"],
-    "party_size_number": ["seven", "one"],
-    "poi": ["parker pennsylvania", "bailey drive"],
-    "sort": ["high class", "top ranking"],
-    "spatial_relation": ["remote", "nearby"],
-    "state": ["ny", "fl"],
-    "party_size_description": ["me and my friend", "my mom and i"],
-    # GetWeather
-    "current_location": ["my location", "here"],
-    "geographic_poi": ["yellowstone national park", "the great wall"],
-    "condition_temperature": ["cold", "warm"],
-    "condition_description": ["temperature", "atmospheric pressure"],
-    # PlayMusic
-    "genre": ["classical", "rock"],
-    "service": ["pandora", "deezer"],
-    "year": ["2022", "2021"],
-    "album": ["folklore", "reputation"],
-    "track": ["end game", "getaway car"],
-    # RateBook
-    "object_part_of_series_type": ["series", "saga"],
-    "object_select": ["this", "current"],
-    "rating_value": ["5", "four"],
-    "object_name": ["lessons from madame chic", "how to trade in stocks"],
-    "object_type": ["comic book", "fiction"],
-    "rating_unit": ["points", "stars"],
-    "best_rating": ["6", "5"],
-    # SearchCreativeWork
-    # SearchScreeningEvent
-    "movie_type": ["science fiction films", "comedy"],
-    "object_location_type": ["movie theatre", "cinema"],
-    "location_name": ["the castro theatre", "film forum"],
-    "movie_name": ["titanic", "green book"]
-}
+snips_domains = []
+domain2desc = {'atis': 'airline travel'}
+domain2slots = {}
+
+domainslot2desc = {}
+domainslot2example = {}
+domainslot2context = {}
+
+for domain_name, domain_item in snips_map.items():
+    snips_domains.append(domain_name)
+    domain2desc[domain_name] = domain_item['domain_desc']
+    domain2slots[domain_name] = list(domain_item['slot_info'].keys())
+
+    domainslot2desc[domain_name] = {}
+    domainslot2example[domain_name] = {}
+    domainslot2context[domain_name] = {}
+    for slot_name, slot_item in domain_item['slot_info'].items():
+        domainslot2desc[domain_name][slot_name] = slot_item['slot_desc']
+        domainslot2example[domain_name][slot_name] = slot_item['slot_example']['true_response']
+        domainslot2context[domain_name][slot_name] = slot_item['slot_example']['context']
+
 
 domain2slots['atis'] = []
+domainslot2desc['atis'] = {}
+domainslot2example['atis'] = {}
 with open('gsl/datasets/atis_slot_info.txt', 'r', encoding='utf-8') as fr:
     for line in fr:
         line_strip = line.strip('\n').split('\t')
         slot = line_strip[0]
-        slot2description[slot] = line_strip[1]
+        domainslot2desc['atis'][slot] = line_strip[1]
         domain2slots['atis'].append(slot)
-        slot2example[slot] = line_strip[2:]
+        domainslot2example['atis'][slot] = line_strip[2:]
 
 
-def bio2sl(sentence_bio):
+def bio2sl(sentence_bio, domain):
     """
     Args:
         sentence_bio: raw line of file
+        domain: domain_name
 
     Returns:
-        [(sentence, entity1, slot1), (sentence, entity2, slot2), ...]
+        [(domain, sentence, entity1, slot1), (domain, sentence, entity2, slot2), ...]
     """
     sentence, bio = sentence_bio.split('\t')
     char_label_list = list(zip(sentence.split(), bio.split()))
@@ -190,15 +560,15 @@ def bio2sl(sentence_bio):
     for entity, slot_type in zip(entities, slot_types):
         collect_dict[slot_type].append(entity)
     for slot_type, entities in collect_dict.items():
-        results.append((sentence, entities, slot_type))
+        results.append((domain, sentence, entities, slot_type))
     return results
 
 
-def load_file(file_path):
+def load_file(file_path, domain):
     content = []
     with open(file_path, 'r', encoding='utf-8') as f:
         for line in f:
-            content.extend(bio2sl(line.strip()))  # sentence, entity list, slot
+            content.extend(bio2sl(line.strip(), domain))  # domain, sentence, entity list, slot
     return content
 
 
@@ -206,7 +576,7 @@ def load_snips_data(data_dir):
     domain2data = {}
     for domain in snips_domains:
         file_path = os.path.join(data_dir, 'snips', domain, f'{domain}.txt')
-        domain2data[domain] = load_file(file_path)
+        domain2data[domain] = load_file(file_path, domain)
     return domain2data
 
 
@@ -216,14 +586,14 @@ def load_snips_seen_unseen_data(data_dir):
     for domain in snips_domains:
         seen_file_path = os.path.join(data_dir, 'snips', domain, f'seen_slots.txt')
         unseen_file_path = os.path.join(data_dir, 'snips', domain, f'unseen_slots.txt')
-        domain2data_seen[domain] = load_file(seen_file_path)
-        domain2data_unseen[domain] = load_file(unseen_file_path)
+        domain2data_seen[domain] = load_file(seen_file_path, domain)
+        domain2data_unseen[domain] = load_file(unseen_file_path, domain)
     return domain2data_seen, domain2data_unseen
 
 
 def load_atis_data(data_dir):
     file_path = os.path.join(data_dir, 'atis', 'atis.txt')
-    return {'atis': load_file(file_path)}
+    return {'atis': load_file(file_path, 'atis')}
 
 
 def generate_text_data(data_dir, target_domain, shot_num=0):
@@ -238,7 +608,7 @@ def generate_text_data(data_dir, target_domain, shot_num=0):
         if domain_name != target_domain and domain_name != 'atis':
             train_data.extend(domain_data)
 
-    train_data.extend(all_data[target_domain][:shot_num])  # [(sentence, entity list, slot), ...]
+    train_data.extend(all_data[target_domain][:shot_num])  # [(domain, sentence, entity list, slot), ...]
     valid_data.extend(all_data[target_domain][shot_num:500])
     test_data.extend(all_data[target_domain][500:])
 

@@ -22,9 +22,13 @@ parser.add_argument('--query-max-seq-length', help='Max sequence length for quer
 parser.add_argument('--response-max-seq-length', help='Max sequence length for response.', type=int, default=64)
 parser.add_argument('--num-beams', help='T5 generation beam number.', type=int, default=2)
 parser.add_argument('--query-schema', help='Schema for query generation', type=str,
-                    choices=['description',
+                    choices=['slot_desc',
+                             'slot_desc+domain_desc',
                              'example',
-                             'mix'], default='description')
+                             'context_example',
+                             'slot_desc+example',
+                             'slot_desc+context_example',
+                             'slot_desc+domain_desc+context_example'], default='slot_desc')
 parser.add_argument('--response-schema', help='Schema for response generation', type=str,
                     choices=['plain'], default='plain')
 parser.add_argument('--shot-num', help='Shot number.', type=int, default=0)
@@ -37,7 +41,7 @@ def process_args():
     args.summary_dir = setting.SUMMARY_DIR
     args.dump_dir = setting.DUMP_DIR
     args.data_dir = setting.DATA_DIR
-    args.exp_name = '%s-%s-%s' % (args.model_name, args.tgt_domain, args.shot_num)
+    args.exp_name = '%s-%s-%s' % (args.model_name.replace('/', '_'), args.tgt_domain, args.shot_num)
 
 
 process_args()
@@ -55,6 +59,8 @@ def train():
                                                             response_schema=args.response_schema)
     unseen_dataset = None if unseen_data is None else SLDataset(unseen_data, query_schema=args.query_schema,
                                                                 response_schema=args.response_schema)
+    print(train_dataset[25])
+    lslllaa
 
     trainer = Trainer(args.model_name, args)
     trainer.fit(train_dataset, valid_dataset, test_dataset, seen_dataset, unseen_dataset,
