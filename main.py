@@ -59,8 +59,6 @@ def train():
                                                             response_schema=args.response_schema)
     unseen_dataset = None if unseen_data is None else SLDataset(unseen_data, query_schema=args.query_schema,
                                                                 response_schema=args.response_schema)
-    print(train_dataset[25])
-    lslllaa
 
     trainer = Trainer(args.model_name, args)
     trainer.fit(train_dataset, valid_dataset, test_dataset, seen_dataset, unseen_dataset,
