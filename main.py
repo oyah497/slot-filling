@@ -28,11 +28,15 @@ parser.add_argument('--query-schema', help='Schema for query generation', type=s
                              'context_example',
                              'slot_desc+example',
                              'slot_desc+context_example',
-                             'slot_desc+domain_desc+context_example'], default='slot_desc')
+                             'slot_desc+domain_desc+context_example',
+                             'min',
+                             'notSD',
+                             'proposed_query1'], default='slot_desc')
 parser.add_argument('--response-schema', help='Schema for response generation', type=str,
-                    choices=['plain'], default='plain')
+                    choices=['plain', 'proposed', 'proposed2'], default='plain')
 parser.add_argument('--shot-num', help='Shot number.', type=int, default=0)
 parser.add_argument('--patience', help='Patience epoch for early stop.', type=int, default=5)
+#parser.add_argument('--decoder-input', help='decoder input', action='store_true')
 
 args = parser.parse_args()
 
@@ -52,13 +56,13 @@ def train():
     train_data, valid_data, test_data, seen_data, unseen_data = generate_text_data(args.data_dir,
                                                                                    args.tgt_domain,
                                                                                    shot_num=args.shot_num)
-    train_dataset = SLDataset(train_data, query_schema=args.query_schema, response_schema=args.response_schema)
-    valid_dataset = SLDataset(valid_data, query_schema=args.query_schema, response_schema=args.response_schema)
-    test_dataset = SLDataset(test_data, query_schema=args.query_schema, response_schema=args.response_schema)
+    train_dataset = SLDataset(train_data, query_schema=args.query_schema, response_schema=args.response_schema) #,decode_input=args.decoder_input)
+    valid_dataset = SLDataset(valid_data, query_schema=args.query_schema, response_schema=args.response_schema)#, decode_input=args.decoder_input)
+    test_dataset = SLDataset(test_data, query_schema=args.query_schema, response_schema=args.response_schema)#, decode_input=args.decoder_input)
     seen_dataset = None if seen_data is None else SLDataset(seen_data, query_schema=args.query_schema,
-                                                            response_schema=args.response_schema)
+                                                            response_schema=args.response_schema)#, decode_input=args.decoder_input)
     unseen_dataset = None if unseen_data is None else SLDataset(unseen_data, query_schema=args.query_schema,
-                                                                response_schema=args.response_schema)
+                                                                response_schema=args.response_schema)#, decode_input=args.decoder_input)
 
     trainer = Trainer(args.model_name, args)
     trainer.fit(train_dataset, valid_dataset, test_dataset, seen_dataset, unseen_dataset,

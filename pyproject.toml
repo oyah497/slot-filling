@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 transformers = "^4.22.1"
+tensorboard = "^2.10.0"
 
 
 [build-system]

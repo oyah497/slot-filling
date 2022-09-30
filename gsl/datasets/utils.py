@@ -518,6 +518,46 @@ with open('gsl/datasets/atis_slot_info.txt', 'r', encoding='utf-8') as fr:
         domainslot2example['atis'][slot] = line_strip[2:]
 
 
+#unseen_slot = {
+#    'AddToPlaylist': ['playlist_owner', 'entity_name'] , 
+#    'BookRestaurant': ['restaurant_type', 'served_dish', 'restaurant_name', 'party_size_description', 'cuisine', 'party_size_description', ], 
+#    'GetWeather': [], 
+#    'PlayMusic': [], 
+#    'RateBook': [], 
+#    'SearchCreativeWork': [], 
+#    'SearchScreeningEvent': []
+#    }
+
+
+ # 'music_item', 'playlist_owner', 'entity_name', 'playlist', 'artist'
+
+ # 'city', 'facility', 'timeRange', 'restaurant_name', 'country', 'cuisine', 'restaurant_type',
+            #                        'served_dish', 'party_size_number', 'poi', 'sort', 'spatial_relation', 'state',
+            #                        'party_size_description'
+
+ # 'city', 'state', 'timeRange', 'current_location', 'country', 'spatial_relation', 'geographic_poi',
+            #                    'condition_temperature', 'condition_description'
+
+# 'genre', 'music_item', 'service', 'year', 'playlist', 'album', 'sort', 'track', 'artist'
+
+# 'object_part_of_series_type', 'object_select', 'rating_value', 'object_name', 'object_type',
+            #                  'rating_unit', 'best_rating'
+
+
+# 'timeRange', 'movie_type', 'object_location_type', 'object_type', 'location_name',
+            # 
+
+
+
+
+
+
+
+
+
+
+
+
 def bio2sl(sentence_bio, domain):
     """
     Args:
@@ -592,8 +632,21 @@ def load_snips_seen_unseen_data(data_dir):
 
 
 def load_atis_data(data_dir):
-    file_path = os.path.join(data_dir, 'atis', 'atis.txt')
-    return {'atis': load_file(file_path, 'atis')}
+    #file_path = os.path.join(data_dir, 'atis', 'atis.txt')
+    #return {'atis': load_file(file_path, 'atis')}
+    intents = ['atis_airfare', 'atis_airline', 'atis_flight', 'atis_ground_service', 'others']
+    content = []
+
+    for intent in intents:
+        intent_path = os.path.join(data_dir, 'atis', intent, f'{intent}.txt')
+        content.extend(load_file(intent_path, 'atis'))
+
+    return {'atis': content}
+
+#    airfare_path = os.path.join(data_dir, 'atis', 'atis_airfare', 'atis_airfare.txt')
+#    content = load_file(airfare_path, 'atis')
+
+
 
 
 def generate_text_data(data_dir, target_domain, shot_num=0):

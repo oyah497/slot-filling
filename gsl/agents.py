@@ -131,7 +131,8 @@ class Trainer:
         for epoch in range(epochs):
             self.model.train()
             train_epoch_loss = []
-            train_bar = tqdm.tqdm(train_dataloader)
+            train_bar = tqdm.tqdm(train_dataloader, dynamic_ncols=True)
+        #    for query, response, dec_in in train_bar:
             for query, response in train_bar:
                 query_token = self.tokenizer(query, padding=True,
                                              truncation=True, max_length=query_max_seq_length,
@@ -139,16 +140,27 @@ class Trainer:
                 response_token = self.tokenizer(response, padding=True,
                                                 truncation=True, max_length=response_max_seq_length,
                                                 return_tensors='pt')
+        #        dec_in_token = self.tokenizer(dec_in, padding=True,
+        #                                        truncation=True, max_length=response_max_seq_length,
+        #                                        return_tensors='pt')
                 query_ids, query_mask = query_token.input_ids, query_token.attention_mask
                 response_ids, response_mask = response_token.input_ids, response_token.attention_mask
+        #        dec_in_ids, dec_in_mask = dec_in_token.input_ids, dec_in_token.attention_mask
 
+        #        query_ids, query_mask, response_ids, response_mask, dec_in_ids, dec_in_mask = self.to_device(
+        #            [query_ids, query_mask, response_ids, response_mask, dec_in_ids, dec_in_mask]
+        #        )
                 query_ids, query_mask, response_ids, response_mask = self.to_device(
                     [query_ids, query_mask, response_ids, response_mask]
                 )
+                print()
                 outputs = self.model(
                     input_ids=query_ids,
                     attention_mask=query_mask,
                     labels=response_ids,
+           #         decoder_input_ids=dec_in_ids,
+           #         decoder_attention_mask=dec_in_mask
+
                 )
                 loss = outputs.loss
 
@@ -227,24 +239,36 @@ class Trainer:
         tp = num_true = num_pred = 0
         mistake_records = []
         for query, response in valid_bar:
+    #    for query, response, dec_in in valid_bar:
             query_token = self.tokenizer(query, padding=True,
                                          truncation=True, max_length=query_max_seq_length,
                                          return_tensors="pt")
             response_token = self.tokenizer(response, padding=True,
                                             truncation=True, max_length=response_max_seq_length,
                                             return_tensors='pt')
+            
+        #    dec_in_token = self.tokenizer(dec_in, padding=True,
+        #                                        truncation=True, max_length=response_max_seq_length,
+         #                                       return_tensors='pt')
+
             query_ids, query_mask = query_token.input_ids, query_token.attention_mask
             response_ids, response_mask = response_token.input_ids, response_token.attention_mask
+        #    dec_in_ids, dec_in_mask = dec_in_token.input_ids, dec_in_token.attention_mask
 
             query_ids, query_mask, response_ids, response_mask = self.to_device(
                 [query_ids, query_mask, response_ids, response_mask]
             )
+        #    query_ids, query_mask, response_ids, response_mask, dec_in_ids, dec_in_mask = self.to_device(
+        #        [query_ids, query_mask, response_ids, response_mask, dec_in_ids, dec_in_mask]
+        #    )
             if with_loss:
                 with torch.no_grad():
                     outputs = self.model(
                         input_ids=query_ids,
                         attention_mask=query_mask,
                         labels=response_ids,
+                #        decoder_input_ids=dec_in_ids,
+                #        decoder_attention_mask=dec_in_mask
                     )
                 loss = outputs.loss
                 loss_values.append(loss.item())
@@ -259,7 +283,9 @@ class Trainer:
                     early_stopping=True)
             pred_response = self.tokenizer.batch_decode(pred_ids, skip_special_tokens=True,
                                                         clean_up_tokenization_spaces=True)
-            _tp, _num_true, _num_pred, _mistake_records = tp_count(query, response, pred_response)
+            _tp, _num_true, _num_pred, _mistake_records = tp_count(query, response, pred_response, self.args.response_schema)
+            #breakpoint()
+
             tp += _tp
             num_true += _num_true
             num_pred += _num_pred
@@ -277,10 +303,15 @@ class Trainer:
                     record += '\n'
                     f.write(record)
 
+        #breakpoint()
+
         epsilon = 1e-10
         precision = tp / (num_pred + epsilon)
         recall = tp / (num_true + epsilon)
         f1 = 2 * precision * recall / (precision + recall + epsilon)
+
+        #breakpoint()
+
         if len(loss_values) > 0:
             loss = sum(loss_values) / len(loss_values)
             return f1, precision, recall, loss
@@ -293,6 +324,8 @@ class Trainer:
                 response_max_seq_length=64,
                 num_beams=2):
         pass
+
+
 
 
 class Predictor:

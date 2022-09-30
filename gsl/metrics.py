@@ -16,6 +16,26 @@ def parse_plain(sentence):
     return set(entities_list)
 
 
+def parse_proposed(sentence):
+    """
+    Args:
+        sentence: single sentence string
+
+    Returns:
+        Entities set
+    """
+    idx = sentence.find(' is ')
+    if (idx == -1):
+        print("is not found")
+    substring = sentence[(idx + 4):]
+    entities = substring.strip().strip('.').split(',')
+    entities_list = []
+    for entity in entities:
+        entities_list.append(entity.strip())
+    return set(entities_list)
+
+
+
 def tp_count(query, true_response, pred_response, response_schema='plain'):
     """
     Args:
@@ -29,6 +49,10 @@ def tp_count(query, true_response, pred_response, response_schema='plain'):
     """
     if response_schema == 'plain':
         parse_func = parse_plain
+    elif response_schema == 'proposed':
+        parse_func = parse_proposed
+    elif response_schema == 'proposed2':
+        parse_func = parse_proposed
     else:
         raise ValueError('Unsupported response_schema: %s.' % response_schema)
 
