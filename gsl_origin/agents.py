@@ -12,9 +12,6 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import BartForConditionalGeneration, BartTokenizer
 
 
-from .datasets.utils import domainslot2before, domainslot2after, domainslot2example, domainslot2question, domain2slots, domain2slotsnum
-
-
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
 
@@ -83,6 +80,10 @@ class Trainer:
         elif 'bart' in model_name_or_path:
             self.model = BartForConditionalGeneration.from_pretrained(model_name_or_path)
             self.tokenizer = BartTokenizer.from_pretrained(model_name_or_path)
+
+        elif 'gpt' in model_name_or_path:
+            pass
+
         else:
             raise ValueError('Unsupported model: %s' % model_name_or_path)
 
@@ -119,6 +120,10 @@ class Trainer:
             test_sl_dataset,
             seen_sl_dataset,
             unseen_sl_dataset,
+            valid_slot_list,
+            test_slot_list,
+            seen_slot_list,
+            unseen_slot_list,
             batch_size=16,
             lr=2e-5,
             epochs=100,
@@ -136,6 +141,7 @@ class Trainer:
             train_epoch_loss = []
             train_bar = tqdm.tqdm(train_dataloader, dynamic_ncols=True)
         #    for query, response, dec_in in train_bar:
+        #    for query, response in train_dataloader:
             for query, response in train_bar:
                 query_token = self.tokenizer(query, padding=True,
                                              truncation=True, max_length=query_max_seq_length,
@@ -156,6 +162,7 @@ class Trainer:
                 query_ids, query_mask, response_ids, response_mask = self.to_device(
                     [query_ids, query_mask, response_ids, response_mask]
                 )
+
                 outputs = self.model(
                     input_ids=query_ids,
                     attention_mask=query_mask,
@@ -176,7 +183,7 @@ class Trainer:
             train_loss = sum(train_epoch_loss) / len(train_epoch_loss)
 
             valid_f1, valid_precision, valid_recall, valid_loss = self.evaluate(
-                valid_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True
+                valid_sl_dataset, valid_slot_list, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True
             )
 
             self.writer.add_scalars('loss', {'train': train_loss,
@@ -198,7 +205,7 @@ class Trainer:
 
         test_mistake_record_path = os.path.join(self.args.dump_dir, '%s.record' % self.exp_name)
         test_f1, test_precision, test_recall, test_loss = self.evaluate(
-            test_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
+            test_sl_dataset, test_slot_list, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
             mistake_record_path=test_mistake_record_path
         )
         test_result = f'F1: {test_f1:.6f}, precision: {test_precision:.6f}, ' \
@@ -209,7 +216,7 @@ class Trainer:
             print("Evaluation on seen dataset...")
             seen_mistake_record_path = os.path.join(self.args.dump_dir, 'seen_%s.record' % self.exp_name)
             seen_f1, seen_precision, seen_recall, seen_loss = self.evaluate(
-                seen_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
+                seen_sl_dataset, seen_slot_list, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
                 mistake_record_path=seen_mistake_record_path
             )
             seen_result = f'F1: {seen_f1:.6f}, precision: {seen_precision:.6f}, ' \
@@ -219,7 +226,7 @@ class Trainer:
             print("Evaluation on unseen dataset...")
             unseen_mistake_record_path = os.path.join(self.args.dump_dir, 'unseen_%s.record' % self.exp_name)
             unseen_f1, unseen_precision, unseen_recall, unseen_loss = self.evaluate(
-                unseen_sl_dataset, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
+                unseen_sl_dataset, unseen_slot_list, batch_size, query_max_seq_length, response_max_seq_length, num_beams, with_loss=True,
                 mistake_record_path=unseen_mistake_record_path
             )
             unseen_result = f'F1: {unseen_f1:.6f}, precision: {unseen_precision:.6f}, ' \
@@ -228,6 +235,7 @@ class Trainer:
 
     def evaluate(self,
                  dataset,
+                 slot_list,
                  batch_size=16,
                  query_max_seq_length=128,
                  response_max_seq_length=64,
@@ -241,16 +249,6 @@ class Trainer:
         tp = num_true = num_pred = 0
         mistake_records = []
         correct_records = []
-
-
-        count_each_slot = {}
-        for slot in domain2slots[self.args.tgt_domain]:
-            count_each_slot[slot] = {'tp': 0, 'num_true': 0, 'num_pred': 0}
-
-
-
-
-
         for query, response in valid_bar:
     #    for query, response, dec_in in valid_bar:
             query_token = self.tokenizer(query, padding=True,
@@ -283,14 +281,6 @@ class Trainer:
                 #        decoder_input_ids=dec_in_ids,
                 #        decoder_attention_mask=dec_in_mask
                     )
-                    #logits = outputs.logits
-                    #print(logits)
-                    #print(logits.shape)
-                    #print(logits[1, 0, 0])
-                    #logits = logits.softmax(dim=1)
-                    #print(logits)
-                    #print(logits.shape)
-                    #print(logits.topk(1,dm=1))
                 loss = outputs.loss
                 loss_values.append(loss.item())
             with torch.no_grad():
@@ -302,37 +292,14 @@ class Trainer:
                     repetition_penalty=2.5,
                     length_penalty=1.0,
                     early_stopping=True)
-                
-                #logits = self.model(
-                #   input_ids=query_ids,
-                #   attention_mask=query_mask,
-                #   labels=pred_ids
-                # ).logits
-                #logits = logits.softmax(dim=2)
-                #logits = logits.to('cpu').numpy()
-            
-            #slotsnum = domain2slotsnum[self.args.tgt_domain]
-            #score = [1.0] * slotsnum
-            #for i in range(slotsnum):
-            #   for j in range(len(logits[i])):
-            #       score[i] = score[i] * logits[i][j][int()]
-
             pred_response = self.tokenizer.batch_decode(pred_ids, skip_special_tokens=True,
                                                         clean_up_tokenization_spaces=True)
-            _tp, _num_true, _num_pred, _mistake_records, _correct_records, slot, _count_each_slot = tp_count(query, response, pred_response, self.args.tgt_domain, self.args.response_schema)
+            _tp, _num_true, _num_pred, _mistake_records, _correct_records = tp_count(query, response, pred_response, slot_list, self.args.tgt_domain, self.args.response_schema)
             #breakpoint()
 
             tp += _tp
             num_true += _num_true
             num_pred += _num_pred
-
-            #count_each_slot[slot]['tp'] += _tp
-            #count_each_slot[slot]['num_true'] += _num_true
-            #count_each_slot[slot]['num_pred'] += _num_pred
-            for slot in domain2slots[self.args.tgt_domain]:
-                count_each_slot[slot]['tp'] += _count_each_slot[slot]['tp']
-                count_each_slot[slot]['num_true'] += _count_each_slot[slot]['num_true']
-                count_each_slot[slot]['num_pred'] += _count_each_slot[slot]['num_pred']
 
             if mistake_record_path is not None:
                 mistake_records.extend(_mistake_records)
@@ -340,8 +307,6 @@ class Trainer:
 
         if mistake_record_path is not None:
             with open(mistake_record_path, 'w', encoding='utf-8') as f:
-                
-                
                 gokei = 0
                 for sample in mistake_records:
                     q, tr, pr, tr_ents, pr_ents = sample
@@ -389,22 +354,8 @@ class Trainer:
 
                     record += '\n'
                     f.write(record)
-                    
+                
                 print(gokei)
-
-                epsilon = 1e-10
-                for slot, l in count_each_slot.items():
-                    record += "\n\n%s" % slot
-                    for k, v in l.items():
-                        record += '\n<%s> %d' % (k, v)
-                    f1 = l['tp'] * 2.0 / (l['num_true'] + l['num_pred'] + epsilon)
-                    record += '\n<%s> %f' % ('f1', f1)
-
-                
-                record += "\n\n\n\n<tp, num_true, num_pred> %d, %d, %d\n" % (tp, num_true, num_pred)
-                
-                
-                f.write(record)
 
         #breakpoint()
 
@@ -413,6 +364,7 @@ class Trainer:
         recall = tp / (num_true + epsilon)
         f1 = 2 * precision * recall / (precision + recall + epsilon)
         print(tp, num_true, num_pred, precision, recall, f1)
+
         #breakpoint()
 
         if len(loss_values) > 0:
